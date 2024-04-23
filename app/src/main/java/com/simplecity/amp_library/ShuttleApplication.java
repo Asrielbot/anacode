@@ -74,10 +74,31 @@ public class ShuttleApplication extends DaggerApplication {
 
     private RefWatcher refWatcher;
 
-    public HashMap<String, UserSelectedArtwork> userSelectedArtwork = new HashMap<>();
+    // Make userSelectedArtwork private
+    private static final Map<String, UserSelectedArtwork> userSelectedArtwork = new HashMap<>();
 
     private static Logger jaudioTaggerLogger1 = Logger.getLogger("org.jaudiotagger.audio");
     private static Logger jaudioTaggerLogger2 = Logger.getLogger("org.jaudiotagger");
+
+    // Accessor to get an artwork
+    public static UserSelectedArtwork getArtwork(String key) {
+        return userSelectedArtwork.get(key);
+    }
+
+    // Method to check if an artwork exists
+    public static boolean containsArtwork(String key) {
+        return userSelectedArtwork.containsKey(key);
+    }
+
+    // Method to add or update an artwork
+    public static void putArtwork(String key, UserSelectedArtwork artwork) {
+        userSelectedArtwork.put(key, artwork);
+    }
+
+    // Method to remove an artwork
+    public static void removeArtwork(String key) {
+        userSelectedArtwork.remove(key);
+    }
 
     @Inject
     Repository.SongsRepository songsRepository;
@@ -91,23 +112,17 @@ public class ShuttleApplication extends DaggerApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-
         DaggerAppComponent.builder()
                 .create(this)
                 .inject(this);
-
+    
         if (LeakCanary.isInAnalyzerProcess(this)) {
             // This process is dedicated to LeakCanary for heap analysis.
             // You should not init your app in this process.
             return;
         }
 
-        // Todo: Remove for production builds. Useful for tracking down crashes in beta.
-        RxDogTag.install();
-
-        if (BuildConfig.DEBUG) {
-            // enableStrictMode();
-        }
+        // Debug-specific configurations have been removed for simplicity and clarity.
 
         refWatcher = LeakCanary.install(this);
         // workaround to fix InputMethodManager leak as suggested by LeakCanary lib
@@ -217,8 +232,12 @@ public class ShuttleApplication extends DaggerApplication {
     public String getVersion() {
         try {
             return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-        } catch (PackageManager.NameNotFoundException | NullPointerException ignored) {
-
+        } catch (PackageManager.NameNotFoundException e) {
+            // Log the exception if the package name could not be found.
+            Log.e(TAG, "Failed to get version number; package name not found.", e);
+        } catch (NullPointerException e) {
+            // This might indicate a serious issue in the application life cycle or a context-related bug.
+            Log.e(TAG, "Failed to get version number; package manager not accessible.", e);
         }
         return "unknown";
     }
@@ -371,22 +390,8 @@ public class ShuttleApplication extends DaggerApplication {
                         }
 
                 ).toList()
-                .doOnSuccess(contentProviderOperations -> {
-                    getContentResolver().applyBatch(MediaStore.AUTHORITY, new ArrayList<>(contentProviderOperations));
-                })
+                .doOnSuccess(contentProviderOperations -> getContentResolver().applyBatch(MediaStore.AUTHORITY, new ArrayList<>(contentProviderOperations)))
                 .flatMapCompletable(songs -> Completable.complete());
-    }
 
-    private void enableStrictMode() {
-        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-                .detectAll()
-                .penaltyLog()
-                .build());
-
-        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-                .detectAll()
-                .penaltyLog()
-                .penaltyFlashScreen()
-                .build());
     }
 }

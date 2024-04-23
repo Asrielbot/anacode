@@ -57,54 +57,51 @@ public abstract class BaseFragment extends BaseController {
         analyticsManager.logScreenName(getActivity(), screenName());
     }
 
+    private static Map<String, Integer> fragmentAnimations = new HashMap<>();
+
     @Override
     public Animation onCreateAnimation(int transit, boolean enter, int nextAnim) {
-
-        /*
-         * When a fragment transaction is performed on a parent fragment containing nested children,
-         * the children disappear as soon as the transaction begins.. So if you're relying on some
-         * fancy animation for the parent, we need to ensure the child waits before performing its
-         * own animation.
-         * see https://code.google.com/p/android/issues/detail?id=55228
-         */
         final Fragment parent = getParentFragment();
-
-        // Apply the workaround only if this is a child fragment, and the parent
-        // is being removed.
         if (!enter && parent != null && parent.isRemoving()) {
-            // This is a workaround for the bug where child fragments disappear when
-            // the parent is removed (as all children are first removed from the parent)
-            // See https://code.google.com/p/android/issues/detail?id=55228
             Animation doNothingAnim = new AlphaAnimation(1, 1);
-            doNothingAnim.setDuration(getNextAnimationDuration(parent, DEFAULT_CHILD_ANIMATION_DURATION));
+            doNothingAnim.setDuration(DEFAULT_CHILD_ANIMATION_DURATION);
             return doNothingAnim;
         } else {
+            if (nextAnim != 0) {
+                Animation anim = AnimationUtils.loadAnimation(getActivity(), nextAnim);
+                return anim != null ? anim : super.onCreateAnimation(transit, enter, nextAnim);
+            }
             return super.onCreateAnimation(transit, enter, nextAnim);
         }
     }
+    
+
+    public static void setNextAnimation(String tag, int animationResource) {
+        fragmentAnimations.put(tag, animationResource);
+    }
+
+    public static int getNextAnimationResource(String tag) {
+        return fragmentAnimations.getOrDefault(tag, 0);
+    }
 
     /**
-     * Attempt to get the resource ID of the next animation that
-     * will be applied to the given fragment.
-     *
-     * @param fragment the parent fragment
-     * @param defValue default animation value
-     * @return the duration of the parent fragment's animation
+     * Retrieves the animation duration for a specific fragment tag.
+     * @param tag The tag of the fragment whose animation duration is needed.
+     * @param defValue Default value to return if no animation is set.
+     * @return The duration of the animation, or the default value if none is set.
      */
-    private static long getNextAnimationDuration(Fragment fragment, long defValue) {
-        try {
-            // Attempt to get the resource ID of the next animation that
-            // will be applied to the given fragment.
-            Field nextAnimField = Fragment.class.getDeclaredField("mNextAnim");
-            nextAnimField.setAccessible(true);
-            int nextAnimResource = nextAnimField.getInt(fragment);
-            Animation nextAnim = AnimationUtils.loadAnimation(fragment.getActivity(), nextAnimResource);
-
-            // ...and if it can be loaded, return that animation's duration
-            return (nextAnim == null) ? defValue : nextAnim.getDuration();
-        } catch (NoSuchFieldException | IllegalAccessException | Resources.NotFoundException ignored) {
-            return defValue;
+    private static long getNextAnimationDuration(String tag, long defValue) {
+        int animResource = getNextAnimationResource(tag);
+        if (animResource != 0) {
+            try {
+                Animation animation = AnimationUtils.loadAnimation(ShuttleApplication.getAppContext(), animResource);
+                return animation.getDuration();
+            } catch (Resources.NotFoundException e) {
+                // Log or handle the error as needed
+                return defValue;
+            }
         }
+        return defValue;
     }
 
     @Override

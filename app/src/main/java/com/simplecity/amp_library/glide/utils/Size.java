@@ -5,12 +5,19 @@ public class Size {
     public int width;
     public int height;
 
-    public Size(int width, int height) {
-        {
+    public class Size {
+        private int width;
+        private int height;
+    
+        public Size(int width, int height) {
+            setDimensions(width, height);
+        }
+    
+        private void setDimensions(int width, int height) {
             this.width = width;
             this.height = height;
         }
-    }
+    }    
 
     @Override
     public boolean equals(Object o) {

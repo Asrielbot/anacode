@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 public class MediaStoreFetcher extends BaseFetcher {
 
-    String TAG = "MediaStoreFetcher";
+    String tag = "MediaStoreFetcher";
 
     private Context applicationContext;
 

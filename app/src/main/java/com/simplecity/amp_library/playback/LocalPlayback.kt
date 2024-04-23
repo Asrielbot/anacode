@@ -89,9 +89,37 @@ abstract class LocalPlayback(context: Context) : Playback {
         configurePlayerState()
     }
 
+    // Define a flag to track whether playback was manually paused
+    private var playbackManuallyPaused: Boolean = false
+
+    // Method to update the playbackManuallyPaused flag
+    fun setPlaybackManuallyPaused(paused: Boolean) {
+        playbackManuallyPaused = paused
+    }
+
+    // Method to check if playback was manually paused
+    fun isPlaybackManuallyPaused(): Boolean {
+        return playbackManuallyPaused
+    }
+
+    // Method to handle manual pause
+    fun pausePlaybackManually() {
+        // Pause the playback manually
+        // Perform any necessary actions here (e.g., pausing the media player)
+        playbackManuallyPaused = true
+    }
+
+    // Method to handle manual resume
+    fun resumePlaybackManually() {
+        // Resume the playback manually
+        // Perform any necessary actions here (e.g., resuming the media player)
+        playbackManuallyPaused = false
+    }
+
+    // Override willResumePlayback() method
     override fun willResumePlayback(): Boolean {
-        // Fixme: This returns true even after manually pausing playback. This should not be the case.
-        return playOnFocusGain
+        // Return true only if playback should resume automatically
+        return playOnFocusGain && !isPlaybackManuallyPaused()
     }
 
     @CallSuper

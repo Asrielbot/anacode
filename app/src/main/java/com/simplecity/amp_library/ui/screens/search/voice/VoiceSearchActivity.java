@@ -103,19 +103,28 @@ public class VoiceSearchActivity extends BaseActivity {
                         }),
                 //If we have an album matching our query, then play the songs from that album
                 albumsRepository.getAlbums()
-                        .first(Collections.emptyList())
-                        .flatMapObservable(Observable::fromIterable)
-                        .filter(album -> containsIgnoreCase(album.name, filterString)
-                                || containsIgnoreCase(album.name, filterString)
-                                || (Stream.of(album.artists).anyMatch(artist -> containsIgnoreCase(artist.name, filterString)))
-                                || containsIgnoreCase(album.albumArtistName, filterString))
-                        .flatMapSingle(album -> AlbumExtKt.getSongsSingle(album, songsRepository))
-                        .map(songs -> {
-                            Collections.sort(songs, (a, b) -> a.getAlbum().compareTo(b.getAlbum()));
-                            Collections.sort(songs, (a, b) -> ComparisonUtils.compareInt(a.track, b.track));
-                            Collections.sort(songs, (a, b) -> ComparisonUtils.compareInt(a.discNumber, b.discNumber));
-                            return songs;
-                        }),
+                    .first(Collections.emptyList())
+                    .flatMapObservable(Observable::fromIterable)
+                    .filter(album ->
+                            containsIgnoreCase(album.name, filterString)
+                            || (Stream.of(album.artists).anyMatch(artist -> containsIgnoreCase(artist.name, filterString)))
+                            || containsIgnoreCase(album.albumArtistName, filterString)
+                    )
+                    .flatMapSingle(album -> AlbumExtKt.getSongsSingle(album, songsRepository))
+                    .map(songs -> {
+                        Collections.sort(songs, (a, b) -> {
+                            int albumComparison = a.getAlbum().compareTo(b.getAlbum());
+                            if (albumComparison != 0) {
+                                return albumComparison;
+                            }
+                            int trackComparison = ComparisonUtils.compareInt(a.track, b.track);
+                            if (trackComparison != 0) {
+                                return trackComparison;
+                            }
+                            return ComparisonUtils.compareInt(a.discNumber, b.discNumber);
+                        });
+                        return songs;
+                    })
                 //If have a song, play that song, as well as others from the same album.
                 songsRepository.getSongs((Function1<? super Song, Boolean>) null)
                         .first(Collections.emptyList())

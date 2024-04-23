@@ -39,9 +39,7 @@ public abstract class BaseSelectableViewModel<VH extends BaseViewHolder> extends
     public boolean areContentsEqual(Object other) {
         if (this == other) return true;
         if (other == null || getClass() != other.getClass()) return false;
-
-        BaseSelectableViewModel that = (BaseSelectableViewModel) other;
-
+        BaseSelectableViewModel<?> that = (BaseSelectableViewModel<?>) other;
         return isSelected == that.isSelected;
     }
 }

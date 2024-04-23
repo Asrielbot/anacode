@@ -217,11 +217,7 @@ public class SafManager {
                             Log.w(TAG, "Unexpected external file dir: " + file.getAbsolutePath());
                         } else {
                             String path = file.getAbsolutePath().substring(0, index);
-                            try {
-                                path = new File(path).getCanonicalPath();
-                            } catch (IOException e) {
-                                // Keep non-canonical path.
-                            }
+                            path = getCanonicalPath(path);
                             paths.add(path);
                         }
                     }
@@ -231,6 +227,25 @@ public class SafManager {
             Crashlytics.log("getExtSdCardPaths() failed. " + e.getMessage());
         }
         return paths;
+    }
+
+    private String getCanonicalPath(String path) {
+        try {
+            return new File(path).getCanonicalPath();
+        } catch (IOException e) {
+            // Keep non-canonical path.
+            return path;
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public void openDocumentTreePicker(Activity activity) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        if (intent.resolveActivity(applicationContext.getPackageManager()) != null) {
+            activity.startActivityForResult(intent, DOCUMENT_TREE_REQUEST_CODE);
+        } else {
+            Toast.makeText(activity, R.string.R_string_toast_no_document_provider, Toast.LENGTH_LONG).show();
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)

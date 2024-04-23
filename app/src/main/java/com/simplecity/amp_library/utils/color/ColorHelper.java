@@ -232,6 +232,10 @@ public class ColorHelper {
 
         private ColorUtilsFromCompat() {}
 
+        private static void remove() {
+            TEMP_ARRAY.remove();
+        }
+
         /**
          * Composite two potentially translucent colors over each other and returns the result.
          */

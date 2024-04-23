@@ -82,7 +82,7 @@ class MediaIdHelper(
                         uri.pathSegments.contains("playlists") -> MediaIdWrapper.PlaylistDirectory
                         uri.pathSegments.contains("genres") -> MediaIdWrapper.GenreDirectory
                         else -> {
-                            throw IllegalStateException("Unknown MediaId '$mediaId' path")
+                            error("Unknown MediaId '$mediaId' path")
                         }
                     }
                 } else {
@@ -152,8 +152,9 @@ class MediaIdHelper(
     fun getSongListForMediaId(mediaId: String, completion: (List<Song>, position: Int) -> Unit) {
         val mediaWrapper = parseMediaId(mediaId)
         when (mediaWrapper) {
-            is MediaIdWrapper.Song -> {
-                getSongsForPredicate { if (mediaWrapper.albumId == null) true else it.albumId == mediaWrapper.albumId }
+            MediaIdWrapper.Song -> {
+                getSongsForPredicate { mediaWrapper.albumId == null || it.albumId == mediaWrapper.albumId }
+            }
                     .map { songs ->
                         songs
                             .sortedBy { song -> song.albumArtistName }

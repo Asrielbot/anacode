@@ -37,10 +37,11 @@ public class Playlist implements Serializable {
     public boolean canSort = true;
 
     // These are the Playlist rows that we will retrieve.
-    public static final String[] PROJECTION = new String[] {
+    protected static final String[] PROJECTION = new String[] {
             MediaStore.Audio.Playlists._ID,
             MediaStore.Audio.Playlists.NAME
     };
+
 
     public static Query getQuery() {
         return new Query.Builder()
@@ -51,16 +52,83 @@ public class Playlist implements Serializable {
                 .build();
     }
 
-    public Playlist(@Type int type, long id, String name, boolean canEdit, boolean canClear, boolean canDelete, boolean canRename, boolean canSort) {
-        this.type = type;
-        this.id = id;
-        this.name = name;
-        this.canEdit = canEdit;
-        this.canClear = canClear;
-        this.canDelete = canDelete;
-        this.canRename = canRename;
-        this.canSort = canSort;
+    public class Playlist {
+        private final int type;
+        private final long id;
+        private final String name;
+        private final boolean canEdit;
+        private final boolean canClear;
+        private final boolean canDelete;
+        private final boolean canRename;
+        private final boolean canSort;
+    
+        public static class Builder {
+            private int type;
+            private long id;
+            private String name;
+            private boolean canEdit;
+            private boolean canClear;
+            private boolean canDelete;
+            private boolean canRename;
+            private boolean canSort;
+    
+            public Builder setType(int type) {
+                this.type = type;
+                return this;
+            }
+    
+            public Builder setId(long id) {
+                this.id = id;
+                return this;
+            }
+    
+            public Builder setName(String name) {
+                this.name = name;
+                return this;
+            }
+    
+            public Builder setCanEdit(boolean canEdit) {
+                this.canEdit = canEdit;
+                return this;
+            }
+    
+            public Builder setCanClear(boolean canClear) {
+                this.canClear = canClear;
+                return this;
+            }
+    
+            public Builder setCanDelete(boolean canDelete) {
+                this.canDelete = canDelete;
+                return this;
+            }
+    
+            public Builder setCanRename(boolean canRename) {
+                this.canRename = canRename;
+                return this;
+            }
+    
+            public Builder setCanSort(boolean canSort) {
+                this.canSort = canSort;
+                return this;
+            }
+    
+            public Playlist build() {
+                return new Playlist(this);
+            }
+        }
+    
+        private Playlist(Builder builder) {
+            this.type = builder.type;
+            this.id = builder.id;
+            this.name = builder.name;
+            this.canEdit = builder.canEdit;
+            this.canClear = builder.canClear;
+            this.canDelete = builder.canDelete;
+            this.canRename = builder.canRename;
+            this.canSort = builder.canSort;
+        }
     }
+    
 
     public Playlist(Context context, Cursor cursor) {
         id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Playlists._ID));

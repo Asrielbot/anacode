@@ -5,4 +5,12 @@ import dagger.Module
 
 @AssistedModule
 @Module(includes = [AssistedInject_AppAssistedModule::class])
-abstract class AppAssistedModule
+interface AppAssistedModule {
+    fun someFunction()
+}
+
+// The abstract class is replaced with an interface
+class AppAssistedModuleImpl : AppAssistedModule {
+    override fun someFunction() {
+    }
+}

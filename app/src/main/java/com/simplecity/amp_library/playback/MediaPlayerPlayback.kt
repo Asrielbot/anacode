@@ -29,11 +29,13 @@ internal class MediaPlayerPlayback(context: Context) : LocalPlayback(context), M
     private var fadeAnimator: ValueAnimator? = null
 
     override val isPlaying: Boolean
-        get() = synchronized(this) {
-            if (!isInitialized || isFadingDown) {
-                return false
-            } else {
-                return currentMediaPlayer?.isPlaying ?: false || isFadingUp
+        get() {
+            synchronized(this) {
+                if (!isInitialized || isFadingDown) {
+                    return false
+                } else {
+                    return currentMediaPlayer?.isPlaying ?: false || isFadingUp
+                }
             }
         }
 
@@ -277,11 +279,13 @@ internal class MediaPlayerPlayback(context: Context) : LocalPlayback(context), M
                 return true
             }
             else -> {
+                // Handle unknown errors here
+                Log.e(TAG, "Unknown media player error: $what, $extra")
+                // Or perform some fallback behavior
+                callbacks?.onError(this, "Unknown error")
+                return false
             }
         }
-
-        callbacks?.onError(this, "Unknown error")
-        return false
     }
 
     override fun onCompletion(mediaPlayer: MediaPlayer) {
@@ -296,7 +300,8 @@ internal class MediaPlayerPlayback(context: Context) : LocalPlayback(context), M
     }
 
     override fun updateLastKnownStreamPosition() {
-
+        // This function is intentionally left empty.
+        // This class might not need to track stream positions because of XYZ reasons.
     }
 
     private fun createMediaPlayer(context: Context): MediaPlayer {

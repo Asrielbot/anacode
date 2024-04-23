@@ -47,7 +47,7 @@ public class PlayCountTable extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion < 2) {
 
-            String TABLE_BACKUP = "BACKUP";
+            String tableBackup = "BACKUP";
 
             //Rename existing table to backup
             db.execSQL("ALTER TABLE " + TABLE_PLAY_COUNT + " RENAME TO " + TABLE_BACKUP + ";");

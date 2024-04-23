@@ -239,7 +239,7 @@ public class EqualizerFragment extends BaseFragment implements
 
         for (int band = 0; band < numberEqualizerBands; band++) {
             //Unit conversion from mHz to Hz and use k prefix if necessary to display
-            float centerFreqHz = centerFreqs[band] / 1000;
+            float centerFreqHz = (float) centerFreqs[band] / 1000;
             String unitPrefix = "";
             if (centerFreqHz >= 1000) {
                 centerFreqHz = centerFreqHz / 1000;
@@ -259,10 +259,11 @@ public class EqualizerFragment extends BaseFragment implements
                     if (fromUser) {
                         //Determine which band changed
                         int seekbarId = seekBar.getId();
-                        int band = 0;
+                        int band = -1; // Initialize band outside the loop
                         for (int i = 0; i < eqViewElementIds.length; i++) {
                             if (eqViewElementIds[i][1] == seekbarId) {
-                                band = i;
+                                band = i; // Assign the index when condition is met
+                                break; // Exit the loop once the index is found
                             }
                         }
 
